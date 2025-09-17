@@ -106,12 +106,12 @@
                                     </div>
                                 </div>
 
-<%--                                <div class="form-group">--%>
-<%--                                    <label class="col-xs-3">Diện tích thuê</label>--%>
-<%--                                    <div class="col-xs-9">--%>
-<%--                                        <form:input class="form-control" id="rentArea" path="" />--%>
-<%--                                    </div>--%>
-<%--                                </div>--%>
+                                <div class="form-group">
+                                    <label class="col-xs-3">Diện tích thuê</label>
+                                    <div class="col-xs-9">
+                                        <form:input class="form-control" id="rentArea" path="rentArea" />
+                                    </div>
+                                </div>
 
                                 <div class="form-group">
                                     <label class="col-xs-3">Giá thuê</label>
@@ -262,7 +262,7 @@
                 }
             });
             data["typeCode"] = typeCode;
-            if(typeCode!=""){
+            if(typeCode.length > 0){
                 addOrUpdateBuilding(data);
             }
             else{
@@ -278,11 +278,12 @@
                 contentType: "application/json",
                 dataType: "JSON",
                 success: function (respond) {
-                    console.log("Success");
+                    location.reload();
+                    window.location.href="<c:url value="/admin/building-list?message=success"/>";
                 },
                 error: function (respond) {
-                    console.log("Failed");
-                    console.log(respond);
+                    console.log("FAIL", xhr.status, xhr.responseText);
+                    window.location.href="<c:url value="/admin/building-edit?message=error"/>";
                 },
             });
         }

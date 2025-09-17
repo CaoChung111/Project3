@@ -1,5 +1,6 @@
 package com.javaweb.repository.custom.impl;
 
+import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.entity.BuildingEntity;
 import com.javaweb.entity.UserEntity;
 import com.javaweb.model.request.BuildingSearchRequest;
@@ -24,21 +25,21 @@ public class BuildingRepositoryImpl implements BuildingRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public void joinTable(StringBuilder sql, BuildingSearchRequest buildingSearchRequest){
-        Long staffId = buildingSearchRequest.getStaffId();
+    public void joinTable(StringBuilder sql, BuildingSearchBuilder buildingSearchBuilder){
+        Long staffId = buildingSearchBuilder.getStaffId();
         if(staffId != null) {
             sql.append(" INNER JOIN assignmentbuilding ab ON b.id = ab.buildingid ");
         }
     }
 
-    public void queryNormal(StringBuilder sql, BuildingSearchRequest buildingSearchRequest){
+    public void queryNormal(StringBuilder sql, BuildingSearchBuilder buildingSearchBuilder){
         try{
-            Field[] field = new BuildingSearchRequest().getClass().getDeclaredFields();
-            for(Field it : field){
+            Field[] fields = BuildingSearchBuilder.class.getDeclaredFields();
+            for(Field it : fields){
                 it.setAccessible(true);
                 String fieldName = it.getName();
                 if(!fieldName.equals("staffid") && ! fieldName.equals("typeCode") && !fieldName.startsWith("rent")){
-                    Object valueObj = it.get(buildingSearchRequest);
+                    Object valueObj = it.get(buildingSearchBuilder);
                     if(valueObj != null){
                         String value  = valueObj.toString();
                         if(StringUtils.check(value)){
@@ -56,21 +57,21 @@ public class BuildingRepositoryImpl implements BuildingRepositoryCustom {
         }
     }
 
-    public void querySpecial(StringBuilder sql, BuildingSearchRequest buildingSearchRequest){
-        Long staffid = buildingSearchRequest.getStaffId();
+    public void querySpecial(StringBuilder sql, BuildingSearchBuilder buildingSearchBuilder){
+        Long staffid = buildingSearchBuilder.getStaffId();
         if(staffid != null){
             sql.append(" AND ab.staffid = "+ staffid+" ");
         }
 
-        List<String> typeCode = buildingSearchRequest.getTypeCode();
+        List<String> typeCode = buildingSearchBuilder.getTypeCode();
         if(typeCode !=null && typeCode.size()!=0){
             sql.append(" AND( ");
             sql.append(typeCode.stream().map(it-> " b.type LIKE '%"+ it+"%' ").collect(Collectors.joining(" OR ")));
             sql.append(") ");
         }
 
-        Long rentAreaFrom= buildingSearchRequest.getAreaFrom();
-        Long rentAreaTo= buildingSearchRequest.getAreaTo();
+        Long rentAreaFrom= buildingSearchBuilder.getRentAreaFrom();
+        Long rentAreaTo= buildingSearchBuilder.getRentAreaTo();
         if(rentAreaFrom!=null && rentAreaTo!=null){
             sql.append(" AND EXISTS (SELECT * FROM rentarea ra WHERE b.id= ra.buildingid ");
             if(rentAreaFrom !=null){
@@ -81,8 +82,8 @@ public class BuildingRepositoryImpl implements BuildingRepositoryCustom {
             sql.append(") ");
         }
 
-        Long rentPriceFrom= buildingSearchRequest.getRentPriceFrom();
-        Long rentPriceTo = buildingSearchRequest.getRentPriceTo();
+        Long rentPriceFrom= buildingSearchBuilder.getRentPriceFrom();
+        Long rentPriceTo = buildingSearchBuilder.getRentPriceTo();
         if (rentPriceFrom != null) {
             sql.append(" AND b.rentprice >= " + rentPriceFrom);
         }
@@ -91,12 +92,12 @@ public class BuildingRepositoryImpl implements BuildingRepositoryCustom {
         }
     }
     @Override
-    public List<BuildingEntity> findBuilding(BuildingSearchRequest buildingSearchRequest) {
+    public List<BuildingEntity> findBuilding(BuildingSearchBuilder buildingSearchBuilder) {
         StringBuilder sql = new  StringBuilder("SELECT b.* FROM building b ");
-        joinTable(sql, buildingSearchRequest);
+        joinTable(sql, buildingSearchBuilder);
         StringBuilder where = new StringBuilder(" WHERE 1=1 ");
-        queryNormal(where, buildingSearchRequest);
-        querySpecial(where, buildingSearchRequest);
+        queryNormal(where, buildingSearchBuilder);
+        querySpecial(where, buildingSearchBuilder);
         where.append(" GROUP BY b.id");
         sql.append(where);
         Query query = entityManager.createNativeQuery(sql.toString(), BuildingEntity.class);

@@ -2,6 +2,7 @@ package com.javaweb.controller.admin;
 
 
 
+import com.javaweb.converter.BuildingConverter;
 import com.javaweb.entity.BuildingEntity;
 import com.javaweb.enums.District;
 import com.javaweb.enums.TypeCode;
@@ -30,6 +31,8 @@ public class BuildingController {
 
     @Autowired
     private BuildingRepository buildingRepository;
+    @Autowired
+    private BuildingConverter buildingConverter;
 
     @GetMapping(value="/admin/building-list")
     public ModelAndView buildingList(@ModelAttribute BuildingSearchRequest buildingSearchRequest, HttpServletRequest request){
@@ -55,9 +58,11 @@ public class BuildingController {
     public ModelAndView buildingEdit(@PathVariable("id") Long id, HttpServletRequest request){
         ModelAndView mav = new ModelAndView("admin/building/edit");
         BuildingEntity buildingEntity= buildingRepository.findBuildingEntityById(id);
-        mav.addObject("buildingEdit", buildingEntity);
+        BuildingDTO buildingDTO = buildingConverter.convertToBuildingDTO(buildingEntity);
+        mav.addObject("buildingEdit", buildingDTO);
         mav.addObject("listDistrict", District.type());
         mav.addObject("listTypeCode", TypeCode.type());
         return mav;
     }
+
 }

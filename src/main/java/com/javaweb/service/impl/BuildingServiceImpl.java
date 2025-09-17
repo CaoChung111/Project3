@@ -1,23 +1,31 @@
 package com.javaweb.service.impl;
 
+import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.converter.BuildingConverter;
 import com.javaweb.entity.AssignBuildingEntity;
 import com.javaweb.entity.BuildingEntity;
 import com.javaweb.entity.UserEntity;
+import com.javaweb.model.dto.BuildingDTO;
 import com.javaweb.model.request.BuildingSearchRequest;
 import com.javaweb.model.response.BuildingSearchResponse;
 import com.javaweb.model.response.ResponseDTO;
 import com.javaweb.model.response.StaffResponseDTO;
+import com.javaweb.repository.AssignmentBuildingRepository;
 import com.javaweb.repository.BuildingRepository;
+import com.javaweb.repository.RentAreaRepository;
 import com.javaweb.repository.UserRepository;
 import com.javaweb.service.BuildingService;
+import com.javaweb.service.RentAreaService;
+import com.javaweb.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class BuildingServiceImpl implements BuildingService {
     @Autowired
     private BuildingRepository buildingRepository;
@@ -25,10 +33,17 @@ public class BuildingServiceImpl implements BuildingService {
     private UserRepository userRepository;
     @Autowired
     private BuildingConverter buildingConverter;
+    @Autowired
+    private RentAreaService rentAreaService;
+    @Autowired
+    private RentAreaRepository rentAreaRepository;
+    @Autowired
+    private AssignmentBuildingRepository assignmentBuildingRepository;
 
     @Override
     public List<BuildingSearchResponse> findBuilding(BuildingSearchRequest buildingSearchRequest) {
-        List<BuildingEntity> buildingEntities = buildingRepository.findBuilding(buildingSearchRequest);
+        BuildingSearchBuilder buildingSearchBuilder = buildingConverter.toBuildingSearchBuilder(buildingSearchRequest);
+        List<BuildingEntity> buildingEntities = buildingRepository.findBuilding(buildingSearchBuilder);
         List<BuildingSearchResponse> buildingSearchResponses = new ArrayList<>();
         for(BuildingEntity it : buildingEntities){
             BuildingSearchResponse buildingSearchResponse = buildingConverter.convertToSearchResponse(it);
@@ -37,8 +52,15 @@ public class BuildingServiceImpl implements BuildingService {
         return buildingSearchResponses;
     }
 
-    public BuildingEntity addOrUpdateBuilding(BuildingEntity buildingEntity){
-        return buildingRepository.save(buildingEntity);
+    public BuildingDTO addOrUpdateBuilding(BuildingDTO buildingDTO){
+        BuildingEntity buildingEntity = buildingConverter.convertToBuildingEntity(buildingDTO);
+
+        buildingRepository.save(buildingEntity);
+        buildingDTO.setId(buildingEntity.getId());
+        if(StringUtils.check(buildingDTO.getRentArea())){
+            rentAreaService.UpdateRentAreaOfBuilding(buildingDTO);
+        }
+        return buildingDTO;
     }
 
     @Override
@@ -66,5 +88,12 @@ public class BuildingServiceImpl implements BuildingService {
         response.setMessage("Success");
         response.setDetail("200");
         return response;
+    }
+
+    @Override
+    public void deleteBuilding(List<Long> ids){
+        rentAreaRepository.deleteByBuildingIdIn(ids);
+        assignmentBuildingRepository.deleteByBuildingEntityIdIn(ids);
+        buildingRepository.deleteByIdIn(ids);
     }
 }

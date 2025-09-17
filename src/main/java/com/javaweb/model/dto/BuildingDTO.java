@@ -15,6 +15,8 @@ public class BuildingDTO extends AbstractDTO{
     private String direction;
     private String level;
     private Long rentPrice;
+
+    private String rentArea;
     private String rentPriceDescription;
     private String serviceFee;
     private String carFee;
@@ -26,7 +28,7 @@ public class BuildingDTO extends AbstractDTO{
     private String payment;
     private String rentTime;
     private String decorationTime;
-    private String brokerageFee;
+    private Double brokerageFee;
     private List<String> typeCode;
     private String note;
     private String managerName;
@@ -38,6 +40,14 @@ public class BuildingDTO extends AbstractDTO{
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getRentArea() {
+        return rentArea;
+    }
+
+    public void setRentArea(String rentArea) {
+        this.rentArea = rentArea;
     }
 
     public String getStreet() {
@@ -200,11 +210,11 @@ public class BuildingDTO extends AbstractDTO{
         this.decorationTime = decorationTime;
     }
 
-    public String getBrokerageFee() {
+    public Double getBrokerageFee() {
         return brokerageFee;
     }
 
-    public void setBrokerageFee(String brokerageFee) {
+    public void setBrokerageFee(Double brokerageFee) {
         this.brokerageFee = brokerageFee;
     }
 

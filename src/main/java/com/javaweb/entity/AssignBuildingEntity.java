@@ -5,6 +5,10 @@ import javax.persistence.*;
 @Entity
 @Table(name="assignmentbuilding")
 public class AssignBuildingEntity extends BaseEntity{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne
     @JoinColumn(name="staffid")
     private UserEntity userEntity;

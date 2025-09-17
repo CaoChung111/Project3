@@ -383,6 +383,22 @@
             .get();
     data["staffs"] = staffs;
     console.log("OK");
+
+    $.ajax({
+      type: "PUT",
+      url: "/api/building/assignment",
+      data: JSON.stringify(data),
+      contentType: "application/json",
+      dataType: "JSON",
+      success: function (response){
+        console.log("Success");
+        $('#assignmentBuildingModal').modal('hide');
+
+      },
+      error: function (response){
+        window.location.href="<c:url value="/admin/building-list?message=error"/>";
+      }
+    });
   });
 
   $("#btnSearchBuilding").click(function (e){
@@ -406,12 +422,13 @@
   function deleteBuildings(data){
     $.ajax({
       type: "Delete",
-      url: "/api/building/"+ data,
+      url: "/api/building/"+data,
       data: JSON.stringify(data),
       contentType: "application/json",
       dataType: "JSON",
       success: function (respond){
         console.log("SUCCESS");
+        location.reload();
       },
       error: function (respond){
         console.log("FAIL");
